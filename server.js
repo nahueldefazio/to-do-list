@@ -13,7 +13,6 @@ const mongoUri = process.env.MONGO_URI || mongoLocal;
 //Configuro puerto para que railway use su propio puerto y yo en local use el 3000
 const PORT = process.env.PORT || 3000;
 
-console.log('🔗 URI de MongoDB:', mongoUri);
 console.log('🌐 Puerto:', PORT);
 
 // Middleware
