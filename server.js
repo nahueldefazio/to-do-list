@@ -4,6 +4,12 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 
+console.log('🚀 Iniciando servidor...');
+console.log('📋 Variables de entorno:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- PORT:', process.env.PORT);
+console.log('- MONGO_URI:', process.env.MONGO_URI ? 'Configurada' : 'No configurada');
+
 const tasksRoutes = require('./routes/tasksRoutes');
 const app = express();
 
@@ -12,6 +18,9 @@ const mongoLocal = 'mongodb://localhost:27017/todo-list';
 const mongoUri = process.env.MONGO_URI || mongoLocal;
 //Configuro puerto para que railway use su propio puerto y yo en local use el 3000
 const PORT = process.env.PORT || 3000;
+
+console.log('🔗 URI de MongoDB:', mongoUri);
+console.log('🌐 Puerto:', PORT);
 
 // Middleware
 app.use(cors({
@@ -23,6 +32,14 @@ app.use('/api', tasksRoutes);
 
 // Ruta de salud para Railway
 app.get('/health', (req, res) => {
+  const mongoStatus = mongoose.connection.readyState;
+  const mongoStatusText = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  }[mongoStatus] || 'unknown';
+
   const healthCheck = {
     status: 'OK',
     message: 'Servidor funcionando correctamente',
@@ -30,9 +47,11 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
     port: PORT,
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    mongodb: mongoStatusText,
+    version: process.version
   };
   
+  console.log('🏥 Health check solicitado:', healthCheck);
   res.status(200).json(healthCheck);
 });
 
@@ -59,17 +78,32 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Conexión a MongoDB
-mongoose.connect(mongoUri)
-  .then(() => {
-    console.log('MongoDB conectado exitosamente');
-    // Iniciar servidor solo después de conectar a MongoDB
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Servidor corriendo en puerto ${PORT}`);
-      console.log(`Health check disponible en: http://0.0.0.0:${PORT}/health`);
-    });
-  })
-  .catch(err => {
-    console.error('Error de conexión a MongoDB:', err);
-    process.exit(1);
-  });
+// Configurar eventos de MongoDB
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB conectado exitosamente');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ Error de MongoDB:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ MongoDB desconectado');
+});
+
+// Iniciar servidor independientemente de MongoDB para Railway
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`🏥 Health check disponible en: http://0.0.0.0:${PORT}/health`);
+  console.log(`📡 API disponible en: http://0.0.0.0:${PORT}/api`);
+});
+
+// Intentar conectar a MongoDB (no bloquear el servidor)
+mongoose.connect(mongoUri, {
+  serverSelectionTimeoutMS: 5000, // Timeout después de 5 segundos
+  socketTimeoutMS: 45000, // Cerrar sockets después de 45 segundos de inactividad
+})
+.catch(err => {
+  console.error('⚠️ No se pudo conectar a MongoDB:', err.message);
+  console.log('🔄 El servidor continuará funcionando sin base de datos');
+});
