@@ -14,9 +14,32 @@ const mongoUri = process.env.MONGO_URI || mongoLocal;
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors);
 app.use(bodyParser.json());
 app.use('/api', tasksRoutes);
+
+// Ruta de salud para Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Servidor funcionando correctamente',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Ruta raíz
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'API de Lista de Tareas funcionando',
+    endpoints: {
+      health: '/health',
+      tasks: '/api/allTasks',
+      create: '/api/createTask',
+      update: '/api/updateTask/:id',
+      delete: '/api/deleteTask/:id'
+    }
+  });
+});
 
 // Conexión a MongoDB
 mongoose.connect(mongoUri)
