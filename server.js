@@ -10,6 +10,7 @@ const app = express();
 // Configuración por defecto si no hay variable de entorno
 const mongoLocal = 'mongodb://localhost:27017/todo-list';
 const mongoUri = process.env.MONGO_URI || mongoLocal;
+//Configuro puerto para que railway use su propio puerto y yo en local use el 3000
 const PORT = process.env.PORT || 3000;
 
 // Middleware

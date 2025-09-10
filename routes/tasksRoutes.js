@@ -2,6 +2,11 @@ const express = require("express");
 const Tasks = require('../models/tasks');
 const router = express.Router();
 
+router.get('/', (req, res) => {
+    res.send('Backend funcionando!');
+  });
+  
+
 router.get('/allTasks', async (req, res) => {
     try {
         const tasks = await Tasks.find();
