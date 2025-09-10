@@ -1,7 +1,8 @@
-const { Router } = require("express");
+const express = require("express");
 const Tasks = require('../models/tasks');
+const router = express.Router();
 
-Router.get('/allTasks', async (req, res) => {
+router.get('/allTasks', async (req, res) => {
     try {
         const tasks = await Tasks.find();
         res.json(tasks);
@@ -11,7 +12,7 @@ Router.get('/allTasks', async (req, res) => {
     }
 });
 
-Router.post('/createTask', async (req, res) => {
+router.post('/createTask', async (req, res) => {
     try {
         const task = await Tasks.create(req.body);
         res.json(task);
@@ -21,7 +22,7 @@ Router.post('/createTask', async (req, res) => {
     }
 });
 
-Router.put('/updateTask/:id', async (req, res) => {
+router.put('/updateTask/:id', async (req, res) => {
     try {
         const task = await Tasks.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(task);
@@ -31,7 +32,7 @@ Router.put('/updateTask/:id', async (req, res) => {
     }
 });
 
-Router.delete('/deleteTask/:id', async (req, res) => {
+router.delete('/deleteTask/:id', async (req, res) => {
     try {
         const task = await Tasks.findByIdAndDelete(req.params.id);
         res.json(task);
@@ -41,4 +42,4 @@ Router.delete('/deleteTask/:id', async (req, res) => {
     }
 });
 
-module.exports = Router;
+module.exports = router;
