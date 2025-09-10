@@ -10,6 +10,7 @@ const app = express();
 // Configuración por defecto si no hay variable de entorno
 const mongoLocal = 'mongodb://localhost:27017/todo-list';
 const mongoUri = process.env.MONGO_URI || mongoLocal;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -21,7 +22,7 @@ mongoose.connect(mongoUri)
   .then(() => {
     console.log('MongoDB conectado exitosamente');
     // Iniciar servidor solo después de conectar a MongoDB
-    app.listen(3000, () => console.log('Servidor corriendo en puerto 3000'));
+    app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
   })
   .catch(err => {
     console.error('Error de conexión:', err);
