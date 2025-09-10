@@ -32,28 +32,13 @@ app.use('/api', tasksRoutes);
 
 // Ruta de salud para Railway
 app.get('/health', (req, res) => {
-  const mongoStatus = mongoose.connection.readyState;
-  const mongoStatusText = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting'
-  }[mongoStatus] || 'unknown';
-
-  const healthCheck = {
-    status: 'OK',
-    message: 'Servidor funcionando correctamente',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    port: PORT,
-    mongodb: mongoStatusText,
-    version: process.version
-  };
+    res.status(200).json({
+      status: 'OK',
+      message: 'Servidor corriendo',
+      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'not connected'
+    });
+  });
   
-  console.log('🏥 Health check solicitado:', healthCheck);
-  res.status(200).json(healthCheck);
-});
 
 // Ruta raíz
 app.get('/', (req, res) => {
